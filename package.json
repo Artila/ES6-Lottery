@@ -1,0 +1,42 @@
+{
+  "name": "es6-lottery",
+  "version": "1.0.0",
+  "description": "用es6创建一个彩票项目",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "es6"
+  ],
+  "author": "eningi@qq.com",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.2"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-register": "^6.26.0",
+    "connect-livereload": "^0.6.0",
+    "del": "^3.0.0",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-if": "^2.0.2",
+    "gulp-live-server": "0.0.31",
+    "gulp-livereload": "^3.8.1",
+    "gulp-plumber": "^1.1.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sequence": "^0.4.6",
+    "gulp-uglify": "^3.0.0",
+    "gulp-util": "^3.0.8",
+    "jquery": "^3.2.1",
+    "require-dir": "^0.3.2",
+    "vinyl-named": "^1.1.0",
+    "webpack": "^3.8.1",
+    "webpack-stream": "^4.0.0",
+    "yargs": "^10.0.3"
+  }
+}
