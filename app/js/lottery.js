@@ -7,6 +7,7 @@ import $ from 'jquery';
 
 // 深度拷贝
 const copyProperties = function(target, source) {	
+	// Reflect.ownKeys方法用于返回对象的所有属性，基本等同于Object.getOwnPropertyNames与Object.getOwnPropertySymbols之和。
 	for (let key of Reflect.ownKeys(source)) {		
 		if (key !== 'constructor' && key !== 'prototype' && key!== 'name') {	
 			// 为了将属性定义（包括其可枚举性）复制到原型，应使用Object.getOwnPropertyDescriptor() 和 Object.defineProperty()。
@@ -33,26 +34,30 @@ const mix = function(...mixins) {
 class Lottery extends mix(Base, Calculate, Interface, Timer) {
 	constructor(name = 'syy', cname = '11选5', issue = '**', state = '**') {
 		super();
-		this.name = name; // 区分多个彩种
+		this.name = name;   // 区分多个彩种
 		this.cname = cname; // 中文名称
 		this.issue = issue; // 当前期号
 		this.state = state; // 当前状态
-		this.el = ''; // 当前选择器
-		this.omit = new Map(); //遗漏， Map
-		this.open_code = new Set(); //开奖号码， Set
+		
+		this.omit = new Map();            //遗漏， Map
+		this.open_code = new Set();       //开奖号码， Set
 		this.open_code_list = new Set();  //开奖记录， Set
-		this.play_list = new Map(); // 玩法列表
-		this.number =  new Set(); // 选号
-		this.issue_el = '#curr_issue'; // 当前期号选择器
+		this.play_list = new Map();       // 玩法列表
+		this.number =  new Set();         // 选号，1-11		
+		
+		this.el = '';                     // 当前选择器
+		this.issue_el = '#curr_issue';    // 当前期号选择器
 		this.countdown_el = '#countdown'; // 倒计时选择器
-		this.state_el = 'state_el'; // 状态选择器
-		this.cart_el = '.codelist'; // 购物车选择器
-		this.omit_el = ''; // 遗漏选择器
-		this.cur_play = 'r5'; // 当前默认玩法
-		this.initPlayList(); // 剩余方法
-		this.initNumber(); 
-		this.updateState(); // 更新状态
-		this.initEvent(); // 事件初始化
+		this.state_el = 'state_el';       // 状态选择器
+		this.cart_el = '.codelist';       // 购物车选择器
+		this.omit_el = '.boll-list li';      // 遗漏选择器
+		this.cur_play = 'r5';             // 当前默认玩法
+		
+		
+		this.initPlayList();  // 初始化各玩法
+		this.initNumber();    // 初始化号码
+		this.updateState();   // 更新状态
+		this.initEvent();     // 事件初始化
 	}
 	
 	/**
@@ -60,15 +65,30 @@ class Lottery extends mix(Base, Calculate, Interface, Timer) {
 	 */
 	updateState() {
 		let self = this;
+		
 		this.getState().then(function (res) {
 			self.issue = res.issue;
 			self.end_time = res.end_time;
 			self.state = res.state;
-			$(self.issue_el).text(res.issue);
 			
+			let open_issue = self.issue.slice(4);
+			let today_issue = self.issue.slice(-2);
+			let rest = 78 - today_issue *1;
+			
+			let tpl = `
+				今天已售${today_issue}期，还剩<strong class = "red">${rest}</strong>期
+			`;
+			
+			// 更新当前期号
+			$(self.issue_el).text(res.issue);
+			$('#open_issue').text(open_issue);
+			$('.kj-date').html(tpl);
+			
+			// 更新倒计时
 			self.countdown(res.end_time, function(time) {
 				$(self.countdown_el).html(time);
 			},function(){
+				// 倒计时结束，开奖完毕，更新状态，获取开奖号码，获取遗漏数据
 				setTimeout(function() {
 					self.updateState();
 					self.getOmit(self.issue).then(function(res){});
