@@ -8,7 +8,7 @@ class Calculate {
 	computeCount(active, play_name) {
 		// 注数设为0
 		let count = 0;
-		// 玩法是否存在
+		// 玩法是否存在，play_list 是 Map 
 		const exist = this.play_list.has(play_name);
 		
 		const arr = new Array(active).fill('0');
@@ -91,26 +91,31 @@ class Calculate {
 	
 	/**
 	 * combine 组合运算，递归
-	 * arr    array  参与组合运算的数组
-	 * size   number 组合运算的基数,多少个数字为一组
-	 * return number 计算注数
+	 * arr    array  参与组合运算的数组，选中的号码列表
+	 * size   number 组合运算的基数，多少个数字为一组
+	 * return number 计算注数，多少个拥有不重复数字的组合
 	 */		
 	static combine(arr, size) {
+		// 保存各种排列组合的结果
 		let allResult = [];
 		
+		// result 初始为 []
 		(function f(arr, size, result){
 			let arrLen = arr.length;
 			
+			// 选中的号码数 < 玩法要求的数量，一注都不够，再选吧
 			if (size > arrLen) {
 				return;
 			}
 			// 这里是判断，千万不要只写一个“=”
+			// 选中的号码数和玩法要求的数量刚刚好，一注
 			if (size === arrLen) {
 				
 				allResult.push([].concat(result, arr));
 			
-			}	else {
+			}	else { // 选中的号码数  > 玩法要求的数量
 				for (let i = 0; i < arrLen; i++) {
+					// 保存上一次运行的结果
 					let newResult = [].concat(result);
 					
 					newResult.push(arr[i]);
