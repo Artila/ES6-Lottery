@@ -1,6 +1,6 @@
 import $ from 'jquery';
 
-// 把所有的接口都封装在一起
+// 接口模块，把所有的接口都封装在一起
 class Interface { 
 	/**
 	 * getOmit 获取遗漏数据
