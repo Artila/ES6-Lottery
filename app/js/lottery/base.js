@@ -1,11 +1,12 @@
 import $ from 'jquery';
 
-// 奖金，玩法，说明
+// 基础功能模块
 class Base {
 	/**
 	 * initPlayList 初始化奖金和玩法及说明
 	 */	
 	initPlayList() {
+		// play_list 是一个 Map 数据结构
 		this.play_list.set('r2', {
 			bonus: 6,
 			tip: '从01～11中任选2个或多个号码，所选号码与开奖号码任意两个号码相同，即中奖<em class="red">6</em>元',
@@ -44,7 +45,7 @@ class Base {
 	}
 
 	/**
-	 * initNumber 初始化号码
+	 * initNumber 初始化号码 1~11
 	 */	
 	initNumber() {
 		for (let i = 1; i < 12; i++) {
@@ -55,8 +56,10 @@ class Base {
 
 	/**
 	 * setOmit 设置遗漏数据
+	 * omit Map 遗漏数据
 	 */	
 	setOmit() {
+		// 先清空，再赋值
 		let self = this;
 		self.omit.clear();
 		
@@ -65,22 +68,80 @@ class Base {
 		}
 		
 		$(self.omit_el).each(function (index, item) {
-			$(item).text(self.omit.get(index));
+			let num = $(item).find('.btn-boll').text();
+			
+			if (self.omit.has(num)) {
+				$(item).find('span').text('1');
+			}
+			
 		});
 	}
 	
 	/**
 	 * setOpenCode 设置开奖号码
+	 * open_code Set 开奖数据
 	 */	
 	setOpenCode(code) {
+		// 先清空，再赋值
 		let self = this;
 		self.open_code.clear();
 		
 		for (let item of code.values()) {
-			self.open_code.add(item);
+			self.open_code.add(item.padStart(2, '0'));
 		}
 		
-		self.updateOpenCode&&self.updateOpenCode.call(self, code);
+		console.log(self.open_code);
+		
+		self.updateOpenCode(self.open_code);
+		self.updateOpenCodeList(self.issue, self.open_code);
+	}
+	
+	/**
+	 * updateOpenCode 更新开奖号码
+	 */		
+	updateOpenCode(code) {
+		let self = this;
+		let arr = Array.from(code);
+		
+		$('#open_code_list li').each(function (i, t) {
+			$(t).text(arr[i]);
+		});
+	}
+	
+	updateOpenCodeList(issue, code) {
+
+		let open_issue = issue.slice(4);
+		let open_code = Array.from(code);
+		
+		let big = 0; // 大
+		let odd = 0; // 奇数
+		open_code.forEach( function(value, index, array) {
+		  if (value > 5) {
+		  	big++;
+		  }
+		  
+		  if (value%2 == 1) {
+		  	odd++;
+		  }
+		});
+		
+		let c = open_code.join(' ');		
+		
+		let tpl = `
+			<tr issue="${open_issue}">
+        <td class="issgray">${open_issue}</td>
+        <td>
+        	<em class="red">${c}</em>
+        </td>
+        <td>
+        	<span class="gray666">${big}:${5-big}</span>
+        	<span class="gray666">${odd}:${5-odd}</span>
+        </td>
+      </tr>
+		`;
+		
+		$('.kpkjcode tbody').prepend(tpl);		
+		
 	}
 	
 	/**
@@ -101,12 +162,13 @@ class Base {
 	changePlayNav(e) {
 		let self = this;
 		let $cur = $(e.currentTarget);
-		
+		//选中的 +active，其他 -active
 		$cur.addClass('active').siblings().removeClass('active');
-		
+		// 获取玩法，并转为小写，例如 R3 => r3
 		self.cur_play = $cur.attr('desc').toLocaleLowerCase();
-		
+		// 更新玩法提示
 		$('#zx_sm span').html(self.play_list.get(self.cur_play).tip);
+		// 切换玩法后，把已选中的号码清空
 		$('.boll-list .btn-boll').removeClass('btn-boll-active');
 		
 		self.getCount();
@@ -114,6 +176,7 @@ class Base {
 	
 	/**
 	 * assistHandle 操作区
+	 * 操作区：全  大  小  奇  偶  清空
 	 */			
 	assistHandle(e) {
 		e.preventDefault(); // 阻止默认操作
@@ -171,10 +234,11 @@ class Base {
 	}
 	
 	/**
-	 * addCode 添加号码
+	 * addCode 添加号码到购物车
 	 */		
 	addCode() {
 		let self = this;
+		// 选中的号码
 		let $active = $('.boll-list .btn-boll-active').text().match(/\d{2}/g);
 		let active = $active ? $active.length : 0;
 		let count = self.computeCount(active, self.cur_play);
@@ -205,6 +269,9 @@ class Base {
 		self.getTotal();
 	}
 	
+	/**
+	 * getCount 金额和奖金计算
+	 */		
 	getCount() {
 		let self = this;
 		let active = $('.boll-list .btn-boll-active').length;
@@ -220,15 +287,24 @@ class Base {
 		
 		if (count === 0) {
 			
-			tpl = `您选了 <b class = "red">${count}</b>注, 共  <b class = "red">${count*2}</b> 元`;
+			tpl = `您选了 <b class = "red">${count}</b>注， 共  <b class = "red">${count*2}</b> 元`;
 			
 		} else if (range[0] === range[1]) {
 			
-			tpl = `您选了 <b>${count}</b>注, 共  <b>${count*2}</b> 元  <em>若中奖, 奖金: <strong class = "red">${range[0]}</strong> 元, 您将${win1 >= 0 ? '盈利' : '亏损'}<strong class = "${win1 >=0 ? 'red' : 'green'}">${Math.abs(win1)}</strong> 元</em>`;
+			tpl = `
+			您选了 <b>${count}</b>注， 共  <b>${count*2}</b> 元，
+			<em>若中奖, 奖金: <strong class = "red">${range[0]}</strong> 元， 
+			您将${win1 >= 0 ? '盈利' : '亏损'}
+			<strong class = "${win1 >=0 ? 'red' : 'green'}">${Math.abs(win1)}</strong> 元</em>`;
 			
 		} else {
 			
-			tpl = `您选了 <b>${count}</b>注, 共  <b>${count*2}</b> 元  <em>若中奖, 奖金: <strong class = "red">${range[0]}</strong> 至 <strong class = "red">${range[1]}</strong> 元, 您将${win1 < 0 && win2 < 0 ? '亏损' : '盈利'}<strong class = "${win1 >=0 ? 'red' : 'green'}">${c1}</strong> 至 <strong class = "${win2 >=0 ? 'red' : 'green'}">${c2}</strong> 元</em>`;			
+			tpl = `
+			您选了 <b>${count}</b>注， 共  <b>${count*2}</b> 元，
+			<em>若中奖, 奖金: <strong class = "red">${range[0]}</strong> 至 <strong class = "red">${range[1]}</strong> 元，
+			您将${win1 < 0 && win2 < 0 ? '亏损' : '盈利'}
+			<strong class = "${win1 >=0 ? 'red' : 'green'}">${c1}</strong> 
+			至 <strong class = "${win2 >=0 ? 'red' : 'green'}">${c2}</strong> 元</em>`;
 			
 		}
 		
@@ -236,7 +312,7 @@ class Base {
 	}
 	
 	/**
-	 * getTotal 计算所有金额
+	 * getTotal 计算购物车所有金额
 	 */		
 	getTotal() {
 		let count = 0;
@@ -251,27 +327,31 @@ class Base {
 	
 	/**
 	 * getRandom 生成随机数
+	 * num number 随机数的个数
 	 */		
 	getRandom(num) {
 		let arr = [], index;
-		
+		// 将 Set 转为 Array
 		let number = Array.from(this.number);
 		
 		while(num--) {
 			index = Number.parseInt(Math.random()*number.length);
 			arr.push(number[index]);
+			// 保证每次号码都不重复
 			number.splice(index, 1);
 		}
 		return arr.join(' ');
 	}
 	
 	/**
-	 * getRandomCode 生成随机号码
+	 * getRandomCode 随机选号
 	 */		
 	getRandomCode(e) {
 		e.preventDefault();
 		let self = this;
+		// 获取注数
 		let num = e.currentTarget.getAttribute('count');
+		// 获取玩法的数字
 		let play = this.cur_play.match(/\d+/g)[0];
 		
 		if (num === '0') {
@@ -281,7 +361,7 @@ class Base {
 		} else {
 			
 			for (let i = 0; i < num; i++) {
-				console.log(i);
+				
 				self.addCodeItem(self.getRandom(play), self.cur_play, self.play_list.get(self.cur_play).name, 1);
 			}
 			
