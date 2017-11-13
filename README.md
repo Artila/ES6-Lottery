@@ -32,3 +32,22 @@
 
 
 
+
+#### 安装
+
+```
+# 进入你放置项目的文件夹，然后克隆项目到本地
+$ git clone https://github.com/Artila/ES6-Lottery.git
+
+# 启动前还需要安装一些插件
+$ npm install gulp
+$ cd server
+$ npm install
+
+# 不要忘了退出，启动
+$ gulp --watch
+
+# 打开浏览器
+$ http://localhost:3000
+```
+
