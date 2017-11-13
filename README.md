@@ -1,5 +1,7 @@
 ##  ES6-Lottery
 
+![lottery](https://github.com/Artila/ES6-Lottery/blob/master/lottery-01.PNG)
+
 #### 项目简介
 
 这是一个11选5的彩票项目，大量使用ES6来实现项目功能，本项目主要功能：期号更新、倒计时、玩法切换、自主选号、随机选号、金额计算、奖金预测、开售状态等、
