@@ -44,7 +44,7 @@ $ npm install gulp
 $ cd server
 $ npm install
 
-# 不要忘了退出，启动
+# 不要忘了退出server文件夹，启动
 $ gulp --watch
 
 # 打开浏览器
